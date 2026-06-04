@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tov-solver"
+version = "0.1.0"
+description = "CLI suite for stellar evolution and compact object simulations."
+readme = "README.md"
+requires-python = ">=3.10"
+# Define your core dependencies here
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0" # Required for scipy.integrate.solve_ivp
+]
+
+[project.scripts]
+tov-solver = "tov_solver.main:main"
+
+# Optional: Define development-only dependencies
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0"
+]
