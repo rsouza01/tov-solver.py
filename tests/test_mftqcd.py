@@ -1,5 +1,4 @@
 import numpy as np
-#from mftqcd import MFTQCD
 
 from tov_solver.domains.eos.mftqcd.mftqcd import MFTQCD
 
