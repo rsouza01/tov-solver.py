@@ -1,5 +1,10 @@
 # tov-solver.py
 
+![Logo](logo.png)
+
+## Badges
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 ## Local build (with virtual environment)
 
@@ -28,3 +33,12 @@ Steps to download and install dependencies for local development
  - Run task dep:install. Pip will read your pyproject.toml, download NumPy/SciPy, and set up your executable.
  - Run task run-eos-polytrope to test it.
  - Run task dep:lock to generate the requirements.txt file so you can commit it to Git.
+
+
+## Authors
+
+- [@rsouza01](https://www.github.com/rsouza01)
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
