@@ -1,0 +1,14 @@
+black==26.5.1
+click==8.4.1
+iniconfig==2.3.0
+mypy_extensions==1.1.0
+numpy==2.4.6
+packaging==26.2
+pathspec==1.1.1
+platformdirs==4.10.0
+pluggy==1.6.0
+Pygments==2.20.0
+pytest==9.0.3
+pytokens==0.4.1
+scipy==1.17.1
+-e git+https://github.com/rsouza01/tov-solver.py.git@e2bb9c34702481ac66db0319593706499f78d4de#egg=tov_solver

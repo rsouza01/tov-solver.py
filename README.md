@@ -22,3 +22,9 @@ Steps to download and install dependencies for local development
   - Linux/Mac users: `source venv/bin/activate`
 - Install dependencies:
   `pip install -r requirements.txt`
+
+### Dependencies
+
+ - Run task dep:install. Pip will read your pyproject.toml, download NumPy/SciPy, and set up your executable.
+ - Run task run-eos-polytrope to test it.
+ - Run task dep:lock to generate the requirements.txt file so you can commit it to Git.

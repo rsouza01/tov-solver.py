@@ -1,9 +1,16 @@
 import argparse
 
+import tov_solver.domains.eos.mftqcd.mftqcd as mftqcd
+import tov_solver.domains.eos.polytropes.polytropes as polytropes
+
 
 def handle_polytrope(args):
 	# Implementation logic to generate a polytropic EOS
-	print(f"Generating polytropic EOS with Gamma={args.gamma} and K={args.kappa}")
+	return polytropes.polytrope(args)
+
+def handle_mftqcd(args):
+	# Implementation logic to generate a polytropic EOS
+	return mftqcd.mftqcd(args)
 
 
 # e.g., models.generate_polytrope(args.gamma, args.kappa)
@@ -27,6 +34,12 @@ def register_commands(subparsers: argparse._SubParsersAction):
 	poly_parser.add_argument("--gamma", type=float, required=True, help="Polytropic index")
 	poly_parser.add_argument("--kappa", type=float, required=True, help="Proportionality constant")
 	poly_parser.set_defaults(func=handle_polytrope)
+
+	mftqcd_parser = eos_subparsers.add_parser("mftqcd", help="Generate a mftqcd EOS")
+	mftqcd_parser.add_argument("--gamma", type=float, required=True, help="Polytropic index")
+	mftqcd_parser.add_argument("--kappa", type=float, required=True, help="Proportionality constant")
+	mftqcd_parser.set_defaults(func=handle_mftqcd)
+
 
 	# Command: tov-solver.py eos tabulated --file data.csv
 	tab_parser = eos_subparsers.add_parser("tabulated", help="Load tabulated EOS data")
