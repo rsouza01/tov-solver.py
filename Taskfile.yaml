@@ -29,6 +29,18 @@ tasks:
       - "{{.VENV_BIN}}/pip install -r requirements.txt"
       - "{{.VENV_BIN}}/pip install -e ."
 
+# --- Testing Tasks ---
+  test:
+    desc: "Run the regression test suite"
+    cmds:
+      - "{{.VENV_BIN}}/python -m pytest"
+
+  test:verbose:
+    desc: "Run tests with detailed output and exposed print statements"
+    cmds:
+      - "{{.VENV_BIN}}/python -m pytest -v -s"
+
+
   run-eos-polytrope:
     cmds:
       - "{{.VENV_BIN}}/tov-solver eos polytrope --gamma 2.0 --kappa 100.0"

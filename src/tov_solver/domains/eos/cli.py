@@ -1,7 +1,7 @@
 import argparse
 
-import tov_solver.domains.eos.mftqcd.mftqcd as mftqcd
-import tov_solver.domains.eos.polytropes.polytropes as polytropes
+import tov_solver.domains.eos.mftqcd.main as mftqcd
+import tov_solver.domains.eos.polytropes.main as polytropes
 
 
 def handle_polytrope(args):
