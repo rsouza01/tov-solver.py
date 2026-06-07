@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import root
 
 class MFTQCD:
     def __init__(self, m_g=0.0, g_coupling=0.0, B_bag=0.0):
@@ -84,3 +85,66 @@ class MFTQCD:
         p_gluon = self.C_gluon * (rho_B**2)
         
         return pq + pe + p_gluon - self.B_bag
+
+    def _n_to_k(self, n, is_quark=True):
+        """Converts particle density (n) in fm^-3 to Fermi momentum (k) in fm^-1."""
+        n = np.maximum(n, 0.0) # Prevent complex numbers from negative guesses in the solver
+        if is_quark:
+            return (n * np.pi**2)**(1.0/3.0)
+        else:
+            return (n * 3.0 * np.pi**2)**(1.0/3.0)
+
+    def _beta_equilibrium_residuals(self, vars_k, n_B_phys):
+        """
+        Calculates the error in Weak Equilibrium and Charge Neutrality.
+        Variables are Fermi momenta: [k_d, k_s, k_e]
+        """
+        k_d, k_s, k_e = vars_k
+        
+        # 1. Baryon Conservation to find k_u
+        # n_B = (k_u^3 + k_d^3 + k_s^3) / (3 * pi^2)
+        k_u_cubed = 3.0 * np.pi**2 * n_B_phys - k_d**3 - k_s**3
+        
+        # np.cbrt smoothly handles negatives, keeping gradients intact for the solver
+        k_u = np.cbrt(k_u_cubed) 
+        
+        # Calculate Bare Chemical Potentials
+        mu_u = np.sqrt(k_u**2 + self.m_u**2)
+        mu_d = np.sqrt(k_d**2 + self.m_d**2)
+        mu_s = np.sqrt(k_s**2 + self.m_s**2)
+        mu_e = np.sqrt(k_e**2 + self.m_e**2)
+        
+        # Equation 1: Weak Equilibrium (d <-> s)
+        eq1 = mu_d - mu_s
+        
+        # Equation 2: Weak Equilibrium (d <-> u + e)
+        eq2 = mu_d - mu_u - mu_e
+        
+        # Equation 3: Charge Neutrality
+        # (2/3)n_u - (1/3)n_d - (1/3)n_s - n_e = 0
+        # Multiplied by 3*pi^2, this simplifies into a beautiful clean polynomial:
+        eq3 = 2.0 * k_u**3 - k_d**3 - k_s**3 - k_e**3
+        
+        return [eq1, eq2, eq3]
+
+    def solve_beta_equilibrium(self, n_B_phys):
+        """
+        Finds the exact Fermi momenta for a given true baryon density (n_B_phys in fm^-3).
+        """
+        # Smart Initial Guess: Assume quarks are roughly equal
+        k_guess = (np.pi**2 * n_B_phys)**(1.0/3.0) 
+        
+        # Run the root finder
+        sol = root(
+            self._beta_equilibrium_residuals, 
+            x0=[k_guess, k_guess * 0.9, 0.1], # k_d, k_s, k_e guesses
+            args=(n_B_phys,)
+        )
+        
+        if not sol.success:
+            raise ValueError(f"Beta-Equilibrium solver failed at n_B = {n_B_phys}: {sol.message}")
+            
+        k_d, k_s, k_e = sol.x
+        k_u = np.cbrt(3.0 * np.pi**2 * n_B_phys - k_d**3 - k_s**3)
+        
+        return k_u, k_d, k_s, k_e
