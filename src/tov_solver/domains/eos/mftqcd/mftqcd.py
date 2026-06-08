@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import root
+from scipy.optimize import brentq
 
 class MFTQCD:
     def __init__(self, m_g=0.0, g_coupling=0.0, B_bag=0.0):
@@ -150,33 +151,100 @@ class MFTQCD:
         return k_u, k_d, k_s, k_e
 
     def get_thermodynamics(self, n_B_phys):
-        """
-        Returns (energy_density, pressure, mu_B) for a given baryon density.
-        """
-        # 1. Get the stable state using the solver we just built
+        # 1. Solve for k's
         k_u, k_d, k_s, k_e = self.solve_beta_equilibrium(n_B_phys)
         
-        # 2. Calculate the Vector Potential V (Hard Gluon repulsion)
-        # V = (27/16) * (g/mg)^2 * rho_B. 
-        # Note: We use n_B_phys directly here.
+        # 2. Vector Potential (Gluons)
         V = self.C_gluon * n_B_phys
+        p_gluon = self.C_gluon * (n_B_phys**2)
         
-        # 3. Calculate effective chemical potentials (kinetic + vector)
+        # 3. Pressure
+        pq, pe = self.kinetic_pressure(k_u, k_d, k_s, k_e)
+        total_pressure = pq + pe + p_gluon - self.B_bag
+        
+        # 4. Energy Density
+        eps = self.kinetic_energy_density(k_u, k_d, k_s, k_e) + p_gluon + self.B_bag
+        
+        # 5. Chemical Potentials
         mu_u = np.sqrt(k_u**2 + self.m_u**2) + V
         mu_d = np.sqrt(k_d**2 + self.m_d**2) + V
         mu_s = np.sqrt(k_s**2 + self.m_s**2) + V
-        
-        # 4. Total Baryon Chemical Potential
         mu_B = mu_u + mu_d + mu_s
         
-        # 5. Pressure and Energy Density
-        # We reuse the kinetic functions, then add the gluon and bag terms
-        pq, pe = self.kinetic_pressure(k_u, k_d, k_s, k_e)
-        p_gluon = self.C_gluon * (n_B_phys**2)
-        total_pressure = pq + pe + p_gluon - self.B_bag
+        return total_pressure, eps, mu_B
+
+
+    def __get_thermodynamics_at_mu(self, target_mu_B):
+        """
+        Finds the thermodynamic state (P, eps, mu_B) for a target chemical potential.
         
-        # Energy density = sum(epsilon_kinetic) + gluon_interaction + B_bag
-        # epsilon_kin = (3/4)*mu_k*k*... (using the Fermi integral logic)
-        # For brevity, I'll let you add your kinetic_energy_density() logic here.
+        Args:
+            target_mu_B (float): The desired Baryon Chemical Potential in MeV.
+            
+        Returns:
+            tuple: (Pressure, Energy Density, Baryon Chemical Potential)
+        """
+        # Define the objective function for the root finder:
+        # We want to find the n_B that results in the target_mu_B.
+        def objective(n_B):
+            # We call your existing get_thermodynamics method
+            _, _, current_mu_B = self.get_thermodynamics(n_B)
+            return current_mu_B - target_mu_B
         
-        return total_pressure, mu_B        
+        # Perform the root finding. 
+        # Range 0.1 to 10.0 fm^-3 covers densities from standard nuclear matter 
+        # up to extreme core conditions.
+        n_B_stable = brentq(objective, 0.001, 10.0)
+        
+        # Return the full thermodynamic state for that density
+        return self.get_thermodynamics(n_B_stable)
+
+    def kinetic_energy_density(self, k_u, k_d, k_s, k_e):
+        """
+        Calculates the kinetic energy density for quarks and electrons.
+        E_kin = (g/(2*pi^2)) * integral[0 to k] of E*p^2 dp
+        For a Fermi gas, the analytical solution is:
+        E = (1/8 * pi^2) * [ (2k^3 + mk)*sqrt(k^2 + m^2) - m^4 * ln((k + sqrt(k^2 + m^2))/m) ]
+        """
+        def _eps_k(k, m):
+            # Handle m=0 case for massless limit (u and d quarks)
+            if m < 1e-6:
+                return (3.0 / 4.0) * (k**4 / np.pi**2)
+            
+            E_f = np.sqrt(k**2 + m**2)
+            term1 = (2.0 * k**3 + k * m**2) * E_f
+            term2 = m**4 * np.log((k + E_f) / m)
+            return (1.0 / (8.0 * np.pi**2)) * (term1 - term2)
+
+        # Quarks (color factor 3)
+        eps_u = 3.0 * _eps_k(k_u, self.m_u)
+        eps_d = 3.0 * _eps_k(k_d, self.m_d)
+        eps_s = 3.0 * _eps_k(k_s, self.m_s)
+        
+        # Electrons (no color factor)
+        eps_e = _eps_k(k_e, 0.511 / 197.3) # Mass in fm^-1
+        
+        return eps_u + eps_d + eps_s + eps_e        
+
+
+    def get_thermodynamics_at_mu(self, target_mu_B_MeV):
+        hbarc = 197.327
+        target_mu_fm = target_mu_B_MeV / hbarc
+        
+        # Define a minimum density floor (e.g., n_B = 0.5 fm^-3)
+        # where your model is known to be stable.
+        n_min = 0.5 
+        
+        def objective(n_B):
+            _, _, mu_B_fm = self.get_thermodynamics(n_B)
+            return mu_B_fm - target_mu_fm
+            
+        # If your target mu is below what the model can handle, return a "low pressure" state
+        # effectively signaling that the quark phase is not present.
+        _, _, mu_min = self.get_thermodynamics(n_min)
+
+        if target_mu_fm < mu_min:
+            return -1e10, -1e10, target_mu_B_MeV # Return a highly negative pressure
+
+        n_B_stable = brentq(objective, n_min, 10.0)
+        return self.get_thermodynamics(n_B_stable)

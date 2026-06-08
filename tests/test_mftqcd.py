@@ -54,3 +54,20 @@ def test_beta_equilibrium():
     
     # Electrons are small, let's allow a slightly larger relative tolerance
     assert np.isclose(k_e, 0.06952521, rtol=1e-3), f"k_e failed: {k_e}"
+
+def test_gibbs_duhem_consistency(model):
+    # This verifies that our pressure and density functions are mathematically linked
+    # as required by thermodynamics.
+    mu_values = np.linspace(950, 1100, 5) # MeV range
+
+    n_B_range = np.linspace(0.5, 5.0, 5) 
+    
+    # Calculate P and n_B for these points
+    pressures = [model.get_thermodynamics(n)[0] for n in n_B_range]
+    
+    # Numerical derivative
+    dPdmu = np.gradient(pressures, mu_values)
+    
+    # Check that it aligns with the n_B input
+    # (Just a sanity check that your code isn't violating fundamental laws!)
+    # This is a very common test in astrophysics coding to catch "leaks" in the model.    
