@@ -1,6 +1,6 @@
 # tov-solver.py
 
-![Logo](logo.png)
+![Logo](logo_ns.jpg)
 
 ## Badges
 
