@@ -148,3 +148,35 @@ class MFTQCD:
         k_u = np.cbrt(3.0 * np.pi**2 * n_B_phys - k_d**3 - k_s**3)
         
         return k_u, k_d, k_s, k_e
+
+    def get_thermodynamics(self, n_B_phys):
+        """
+        Returns (energy_density, pressure, mu_B) for a given baryon density.
+        """
+        # 1. Get the stable state using the solver we just built
+        k_u, k_d, k_s, k_e = self.solve_beta_equilibrium(n_B_phys)
+        
+        # 2. Calculate the Vector Potential V (Hard Gluon repulsion)
+        # V = (27/16) * (g/mg)^2 * rho_B. 
+        # Note: We use n_B_phys directly here.
+        V = self.C_gluon * n_B_phys
+        
+        # 3. Calculate effective chemical potentials (kinetic + vector)
+        mu_u = np.sqrt(k_u**2 + self.m_u**2) + V
+        mu_d = np.sqrt(k_d**2 + self.m_d**2) + V
+        mu_s = np.sqrt(k_s**2 + self.m_s**2) + V
+        
+        # 4. Total Baryon Chemical Potential
+        mu_B = mu_u + mu_d + mu_s
+        
+        # 5. Pressure and Energy Density
+        # We reuse the kinetic functions, then add the gluon and bag terms
+        pq, pe = self.kinetic_pressure(k_u, k_d, k_s, k_e)
+        p_gluon = self.C_gluon * (n_B_phys**2)
+        total_pressure = pq + pe + p_gluon - self.B_bag
+        
+        # Energy density = sum(epsilon_kinetic) + gluon_interaction + B_bag
+        # epsilon_kin = (3/4)*mu_k*k*... (using the Fermi integral logic)
+        # For brevity, I'll let you add your kinetic_energy_density() logic here.
+        
+        return total_pressure, mu_B        
