@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tov_solver"
+name = "tov-solver"
 version = "0.1.0"
 description = "CLI suite for stellar evolution and compact object simulations."
 readme = "README.md"
@@ -18,7 +18,7 @@ dependencies = [
 where = ["src"]
 
 [project.scripts]
-tov_solver = "tov_solver.main:main"
+tov-solver = "tov_solver.main:main"
 
 # Optional: Define development-only dependencies
 [project.optional-dependencies]

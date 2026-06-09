@@ -9,7 +9,7 @@ from tov_solver.domains.tov import cli as tov_cli
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="tov_solver",
+        prog="tov-solver",
         description="CLI suite for stellar evolution and compact object simulations."
     )
 

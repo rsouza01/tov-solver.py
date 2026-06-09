@@ -14,4 +14,4 @@ python-dateutil==2.9.0.post0
 pytokens==0.4.1
 scipy==1.17.1
 six==1.17.0
--e git+ssh://git@github.com/rsouza01/tov-solver.py.git@9dc78f02d197599629fdf17852555063c242ffc8#egg=tov_solver
+-e git+https://github.com/rsouza01/tov-solver.py.git@dc37ed3a5b316c9e294aef856a1bb699cfad3432#egg=tov_solver

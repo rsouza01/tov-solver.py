@@ -43,8 +43,8 @@ tasks:
 
   run-eos-polytrope:
     cmds:
-      - "{{.VENV_BIN}}/tov_solver eos polytrope --gamma 2.0 --kappa 100.0"
+      - "{{.VENV_BIN}}/tov-solver eos polytrope --gamma 2.0 --kappa 100.0"
 
   run-eos-mftqcd:
     cmds:
-      - "{{.VENV_BIN}}/tov_solver eos mftqcd --gamma 2.0 --kappa 100.0"
+      - "{{.VENV_BIN}}/tov-solver eos mftqcd --gamma 2.0 --kappa 100.0"
