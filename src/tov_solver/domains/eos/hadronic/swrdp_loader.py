@@ -6,7 +6,8 @@ class SWRDPLoader:
     def __init__(self, file_path):
         # Skip the first 3 columns as instructed
         # Using space-delimited parsing
-        df = pd.read_csv(file_path, sep='\s+', header=None)        
+        df = pd.read_csv(file_path, sep=r'\s+', header=None)        
+
         # Mapping according to your new descriptor:
         # Col 3: Energy Density (MeV/fm^3)
         # Col 4: Pressure (MeV/fm^3)
