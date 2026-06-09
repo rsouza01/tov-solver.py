@@ -8,6 +8,7 @@
 ![Linux](https://img.shields.io/badge/platform-linux-lightgrey?logo=linux)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
+![Run Tests](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/pytest.yml/badge.svg)
 ![Maintained](https://img.shields.io/badge/Maintained-Yes-green)
 ![Last Commit](https://img.shields.io/github/last-commit/rsouza01/tov-solver.py)
 
@@ -24,9 +25,9 @@
 Steps to download and install dependencies for local development
 
 - Create a virtual environment:
-  `python -m venv venv`
+  `python -m venv .venv`
   or
-  `python3 -m venv venv`
+  `python3 -m venv .venv`
 
 - Activate the virtual environment:
   - Windows users: `source venv/Scripts/activate`
