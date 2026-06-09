@@ -14,6 +14,9 @@ dependencies = [
     "scipy>=1.10.0" # Required for scipy.integrate.solve_ivp
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [project.scripts]
 tov-solver = "tov_solver.main:main"
 
