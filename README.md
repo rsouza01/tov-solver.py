@@ -9,6 +9,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
 ![Run Tests](https://github.com/rsouza01/tov-solver.py/actions/workflows/pytest.yml/badge.svg)
+[![codecov](https://codecov.io/github/rsouza01/tov-solver.py/graph/badge.svg?token=2XQ4KQ9UYQ)](https://codecov.io/github/rsouza01/tov-solver.py)
 ![Maintained](https://img.shields.io/badge/Maintained-Yes-green)
 ![Last Commit](https://img.shields.io/github/last-commit/rsouza01/tov-solver.py)
 

@@ -37,5 +37,11 @@ jobs:
           find . -type d -name "__pycache__" -exec rm -rf {} +
           
           # 3. Explicitly run only the root tests/ directory
-          pytest tests/
-          
+          pytest tests/ --cov=src --cov-branch --cov-report=xml
+
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # You get this from codecov.io
+          files: ./coverage.xml

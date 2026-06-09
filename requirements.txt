@@ -1,5 +1,6 @@
 black==26.5.1
 click==8.4.1
+coverage==7.14.1
 iniconfig==2.3.0
 mypy_extensions==1.1.0
 numpy==2.4.6
@@ -10,8 +11,9 @@ platformdirs==4.10.0
 pluggy==1.6.0
 Pygments==2.20.0
 pytest==9.0.3
+pytest-cov==7.1.0
 python-dateutil==2.9.0.post0
 pytokens==0.4.1
 scipy==1.17.1
 six==1.17.0
--e git+https://github.com/rsouza01/tov-solver.py.git@dc37ed3a5b316c9e294aef856a1bb699cfad3432#egg=tov_solver
+-e git+https://github.com/rsouza01/tov-solver.py.git@3d3dc05bb00b25e717788001a391b3353b84dcd0#egg=tov_solver
