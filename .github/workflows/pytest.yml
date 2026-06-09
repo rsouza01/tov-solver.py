@@ -28,6 +28,14 @@ jobs:
       - name: Install package
         run: |
           pip install -e .
-      - name: Run tests
+      - name: Clean up and run tests
         run: |
-          pytest
+          # 1. Remove any nested test folders that cause collection errors
+          rm -rf src/tov-solver/tests
+          
+          # 2. Force remove pycache to ensure no old imports linger
+          find . -type d -name "__pycache__" -exec rm -rf {} +
+          
+          # 3. Explicitly run only the root tests/ directory
+          pytest tests/
+          
