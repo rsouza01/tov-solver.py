@@ -45,3 +45,15 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # You get this from codecov.io
           files: ./coverage.xml
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=rsouza01-1
+            -Dsonar.projectKey=rsouza01_tov-solver.py
+            -Dsonar.sources=src
+            -Dsonar.python.coverage.reportPaths=coverage.xml
