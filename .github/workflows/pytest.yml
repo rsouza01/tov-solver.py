@@ -45,6 +45,7 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         if: env.RUN_CODECOV == 'true'
+        # TAG: [![codecov](https://codecov.io/github/rsouza01/tov-solver.py/graph/badge.svg?token=2XQ4KQ9UYQ)](https://codecov.io/github/rsouza01/tov-solver.py)
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # You get this from codecov.io
           files: ./coverage.xml
