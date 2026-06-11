@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      RUN_CODECOV: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,6 +44,7 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
+        if: env.RUN_CODECOV == 'true'
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # You get this from codecov.io
           files: ./coverage.xml
