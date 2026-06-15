@@ -33,6 +33,13 @@ def run_merger_pipeline(hadronic_eos, quark_eos):
     # Note: If you don't have a spline for the merged result yet, you can use np.gradient as a fallback
     cs2_merged = np.gradient(p_merged, mu_grid) / np.gradient(eps_merged, mu_grid)    
     plotter.plot_cs2(mu_grid, cs2_had, cs2_quark, cs2_merged=cs2_merged)
+    
+    # 1. Calculate the actual derivative arrays
+    dp_dmu_had = hadronic_eos.p_interp.derivative()(mu_grid)
+    dp_dmu_quark = quark_eos.p_interp.derivative()(mu_grid)
+
+    # 2. Pass these arrays to the plotter
+    plotter.plot_derivatives(mu_grid, dp_dmu_had, dp_dmu_quark)
 
     return p_merged, eps_merged
 
@@ -77,7 +84,7 @@ def perform_maxwell_construction(hadronic_eos, quark_eos, n_points=1000):
     
     return p_merged, eps_merged, p_had, eps_had, p_quark, eps_quark, mu_grid
 
-def compute_cs2(eos_model, mu_grid):
+def _compute_cs2(eos_model, mu_grid):
     # Check if the interpolator has a derivative method
     if hasattr(eos_model.p_interp, 'derivative'):
         dp_dmu = eos_model.p_interp.derivative()(mu_grid)
@@ -89,3 +96,14 @@ def compute_cs2(eos_model, mu_grid):
         deps_dmu = np.gradient(eos_model.eps_interp(mu_grid), mu_grid)
         
     return dp_dmu / deps_dmu
+
+def compute_cs2(eos_model, mu_grid):
+    # Instead of .derivative(), use np.gradient
+    # This is much more stable for "real" simulation data
+    p_values = eos_model.p_interp(mu_grid)
+    eps_values = eos_model.eps_interp(mu_grid)
+    
+    dp_dmu = np.gradient(p_values, mu_grid)
+    deps_dmu = np.gradient(eps_values, mu_grid)
+    
+    return dp_dmu / deps_dmu    

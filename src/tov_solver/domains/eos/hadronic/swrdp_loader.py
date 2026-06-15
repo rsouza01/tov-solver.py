@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.interpolate import CubicSpline
+from scipy.signal import savgol_filter
 
 class SWRDPLoader:
     def __init__(self, file_path):
@@ -23,9 +24,14 @@ class SWRDPLoader:
         self.pressure = self.pressure[idx]
         self.energy_density = self.energy_density[idx]
         
+        # Apply a Savitzky-Golay filter to smooth the data before interpolation
+        # window_length must be odd, polyorder should be 2 or 3
+        smooth_p = savgol_filter(self.pressure, window_length=11, polyorder=3)
+        smooth_eps = savgol_filter(self.energy_density, window_length=11, polyorder=3)
+
         # Interpolators
-        self.p_interp = CubicSpline(self.mu_B, self.pressure)
-        self.eps_interp = CubicSpline(self.mu_B, self.energy_density)
+        self.p_interp = CubicSpline(self.mu_B, smooth_p)
+        self.eps_interp = CubicSpline(self.mu_B, smooth_eps)        
 
     def get_eos(self, mu_B):
         return self.p_interp(mu_B), self.eps_interp(mu_B)        

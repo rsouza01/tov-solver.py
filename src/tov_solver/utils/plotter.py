@@ -54,3 +54,14 @@ class EoSPlotter:
         plt.legend()
         plt.savefig(os.path.join(self.output_dir, "cs2_comparison.png"), dpi=300)        
 
+    def plot_derivatives(self, mu_grid, dp_dmu_had, dp_dmu_quark):
+        plt.figure(figsize=(8, 6))
+        # Plot the arrays directly
+        plt.plot(mu_grid, dp_dmu_had, label="dP/dmu (Had)", linestyle='--')
+        plt.plot(mu_grid, dp_dmu_quark, label="dP/dmu (Quark)", linestyle=':')
+        
+        plt.xlabel(r"Chemical Potential $\mu_B$ [MeV]")
+        plt.ylabel(r"Derivative $dP/d\mu$")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(os.path.join(self.output_dir, "derivatives_check.png"), dpi=300)
