@@ -1,12 +1,17 @@
 import argparse
 
 import tov_solver.domains.eos.mftqcd.main as mftqcd
+import tov_solver.domains.eos.hadronic.swrdp as swrdp
 import tov_solver.domains.eos.polytropes.main as polytropes
 
 
 def handle_polytrope(args):
 	# Implementation logic to generate a polytropic EOS
 	return polytropes.polytrope(args)
+
+def handle_hadronic(args):
+	# Implementation logic to generate a polytropic EOS
+	return swrdp.swrdp(args)
 
 def handle_mftqcd(args):
 	# Implementation logic to generate a polytropic EOS
@@ -40,6 +45,11 @@ def register_commands(subparsers: argparse._SubParsersAction):
 	mftqcd_parser.add_argument("--kappa", type=float, required=True, help="Proportionality constant")
 	mftqcd_parser.set_defaults(func=handle_mftqcd)
 
+	swrdp_parser = eos_subparsers.add_parser("swrdp", help="Generate a swrdp EOS")
+	swrdp_parser.add_argument("--path", type=str, required=True, help="Path to tabulated file")
+	swrdp_parser.add_argument("--precision", type=str, default="%.3f", help="Float precision string (e.g., '%%.3f' or '%%.4f')")
+	swrdp_parser.add_argument("--output", type=str, required=False, help="Path to the output file")
+	swrdp_parser.set_defaults(func=handle_hadronic)
 
 	# Command: tov-solver.py eos tabulated --file data.csv
 	tab_parser = eos_subparsers.add_parser("tabulated", help="Load tabulated EOS data")

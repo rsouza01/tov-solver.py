@@ -48,3 +48,11 @@ tasks:
   run-eos-mftqcd:
     cmds:
       - "{{.VENV_BIN}}/tov-solver eos mftqcd --gamma 2.0 --kappa 100.0"
+
+  run-eos-swrdp:
+    cmds:
+      - "{{.VENV_BIN}}/tov-solver eos swrdp --path ./data/swrdp/eos_swrdp_l0040_L97a32.dat --output ./tmp/eos_swrdp_l0040_L97a32.csv"
+
+  run-eos-swrdp-precision:
+    cmds:
+      - "{{.VENV_BIN}}/tov-solver eos swrdp --path ./data/swrdp/eos_swrdp_l0040_L97a32.dat --output ./tmp/eos_swrdp_l0040_L97a32.csv --precision %.5f"
