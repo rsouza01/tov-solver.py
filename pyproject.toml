@@ -59,10 +59,13 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["N802"]  # test names mirror physics notation
-
-
-# --- typing ----------------------------------------------------------------
+"tests/*" = [
+    "N802",    # test names mirror physics notation
+    "SIM300",  # `x == pytest.approx(y)` is the idiom; ruff misreads UPPER_CASE as a literal
+]
+ 
+ 
+ # --- typing ----------------------------------------------------------------
 
 [tool.mypy]
 python_version = "3.12"
