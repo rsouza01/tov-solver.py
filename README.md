@@ -2,6 +2,18 @@
 
 ![Logo](logo_ns.jpg)
 
+# tov-solver.py
+
+
+Structure of hybrid neutron stars: hadronic and quark equations of state,
+first-order phase transitions, and integration of the
+Tolman-Oppenheimer-Volkoff equations.
+
+Successor to the C/Mathematica toolchain used in
+*Existência de matéria de quarks fria na Natureza: Modelos e Observações*
+(IAG-USP, 2016).
+
+
 ## Badges
 
 ![Python](https://img.shields.io/badge/python-3.12-blue?logo=python)
@@ -18,10 +30,29 @@
 
 ## Local build (with virtual environment)
 
-### Taskfile
+Requires Python >= 3.12 and [Task](https://taskfile.dev).
 
-- Install taskfile.dev"
-  `sudo apt update && sudo apt install taskenv`
+```sh
+task install    # create .venv and install in editable mode
+task check      # lint + type check + tests (what CI runs)
+task test       # tests only
+task fmt        # format and autofix
+```
+
+## Units
+
+Internal working units are natural nuclear units throughout:
+
+| quantity                      | unit       |
+| ----------------------------- | ---------- |
+| energy, chemical potential    | MeV        |
+| pressure, energy density      | MeV/fm^3   |
+| number density                | fm^-3      |
+| Fermi momentum                | fm^-1      |
+
+Geometrized units (G = c = 1, lengths in km) are used only inside the TOV
+integrator, via explicit converters.
+
 
 ### Python
 
