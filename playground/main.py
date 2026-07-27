@@ -13,6 +13,8 @@ Then keep poking:
 import numpy as np
 
 from tov_solver.eos import Polytrope
+from tov_solver.structure import mass_radius_curve
+import numpy as np
 
 # --- look at the columns side by side --------------------------------------
 
@@ -80,6 +82,11 @@ def main():
     #   * feed table(grid) a grid that is not sorted, and read the error
     #   * check that validate() still passes on a very coarse grid (num=10)
 
- 
+    print("\nTOV")
+
+    table = Polytrope(gamma=2.0, kappa=100.0, density_max=5.0).table()
+    for s in mass_radius_curve(table, np.logspace(0, 3.35, 30)):
+        print(s)
+
 if __name__ == "__main__":
     main()
