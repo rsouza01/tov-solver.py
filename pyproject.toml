@@ -31,7 +31,7 @@ packages = ["src/tov_solver"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --strict-markers"
+addopts = "-v --strict-markers"
 # Numerical code should never silently swallow a warning.
 filterwarnings = ["error"]
 
