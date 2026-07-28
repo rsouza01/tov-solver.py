@@ -14,7 +14,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      RUN_CODECOV: false
+      RUN_CODECOV: true
     strategy:
       fail-fast: false
       matrix:
