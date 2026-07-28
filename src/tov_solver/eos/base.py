@@ -23,8 +23,15 @@ quantities. ``EoSTable`` therefore *derives* it rather than storing it. A
 table carrying its own mu column can drift out of step with its p and eps;
 a derived one cannot.
 
-The independent check that survives this is the Gibbs-Duhem relation,
-dp/dmu = n, which :meth:`EoSTable.validate` evaluates numerically.
+The independent check that survives this is the first law at zero
+temperature, deps/dn = mu, which :meth:`EoSTable.validate` evaluates
+numerically. Given the Euler relation it is equivalent to Gibbs-Duhem,
+dp/dmu = n, but far better conditioned: in the crust the chemical potential
+barely moves -- a few MeV above the neutron mass across two decades in
+pressure -- so differentiating with respect to it is hopeless, while
+differentiating the energy density with respect to the baryon density is
+not. On tabulated data the two forms differ by an order of magnitude in
+accuracy for identical physics.
 
 Naming
 ------
@@ -51,10 +58,12 @@ __all__ = ["EoSModel", "EoSTable", "ValidationReport"]
 
 Array = NDArray[np.float64]
 
-# Tolerance on the numerical Gibbs-Duhem residual: loose enough to absorb
-# interpolation error on a reasonable grid, tight enough to catch a table
-# whose columns genuinely disagree.
-GIBBS_DUHEM_TOLERANCE = 1e-3
+# Tolerance on the median first-law residual. Loose enough to absorb the
+# quadrature error of a tabulated equation of state with real phase
+# structure -- the SWRDP tables sit near 1e-3 -- and tight enough that a
+# table whose columns genuinely disagree cannot pass. An analytic model
+# clears it by five orders of magnitude.
+FIRST_LAW_TOLERANCE = 1e-2
 
 # PCHIP needs four points to be well defined.
 _MIN_SAMPLES = 4
@@ -62,11 +71,33 @@ _MIN_SAMPLES = 4
 
 @dataclass(frozen=True)
 class ValidationReport:
-    """Outcome of the thermodynamic checks on a table."""
+    """Outcome of the thermodynamic checks on a table.
+
+    What the first-law residual does and does not catch is worth knowing
+    precisely, since it is easy to over-trust. Writing the residual for a
+    table whose energy density has been scaled by a constant c gives
+
+        |deps/dn / mu - 1|  =  p (c - 1) / (c eps + p)
+
+    so the check is weighted by p/eps and is nearly blind to a uniform
+    rescaling in the crust, where that ratio is 1e-4. Rescaling the density
+    column is invisible to it outright: Euler absorbs the factor exactly.
+
+    What it does catch, decisively, is any error in the *shape* of eps(n)
+    relative to p(n) -- a wrong exponent, a tilt, a misaligned column, a
+    table stitched together from two sources. Those are the failures that
+    are otherwise invisible.
+
+    Gross unit errors are better caught by asserting a physical scale: the
+    chemical potential of nuclear matter at low density must approach the
+    nucleon mass, and no thermodynamic identity is needed to notice that it
+    does not.
+    """
 
     max_sound_speed_squared: float
     min_sound_speed_squared: float
-    max_gibbs_duhem_residual: float
+    median_first_law_residual: float
+    max_first_law_residual: float
 
     @property
     def is_causal(self) -> bool:
@@ -75,8 +106,17 @@ class ValidationReport:
 
     @property
     def is_consistent(self) -> bool:
-        """True if dp/dmu = n holds to within tolerance."""
-        return self.max_gibbs_duhem_residual <= GIBBS_DUHEM_TOLERANCE
+        """True if deps/dn = mu holds to within tolerance.
+
+        Judged on the median rather than the maximum. A column that is
+        wrong -- misread, mis-scaled, in the wrong units -- is wrong
+        everywhere, so the median catches it decisively. An isolated spike
+        is the signature of a kink, which is what a hyperon threshold or a
+        first-order transition genuinely looks like, and rejecting a table
+        for having correct physics would be the wrong call.
+        Use :attr:`max_first_law_residual` to find those kinks.
+        """
+        return self.median_first_law_residual <= FIRST_LAW_TOLERANCE
 
     @property
     def ok(self) -> bool:
@@ -93,9 +133,9 @@ class ValidationReport:
             raise ValueError(msg)
         if not self.is_consistent:
             msg = (
-                f"thermodynamically inconsistent table: max |dp/dmu / n - 1| = "
-                f"{self.max_gibbs_duhem_residual:.4g}, "
-                f"tolerance {GIBBS_DUHEM_TOLERANCE:.4g}"
+                f"thermodynamically inconsistent table: median |deps/dn / mu - 1| = "
+                f"{self.median_first_law_residual:.4g}, "
+                f"tolerance {FIRST_LAW_TOLERANCE:.4g}"
             )
             raise ValueError(msg)
 
@@ -205,6 +245,10 @@ class EoSTable:
         return PchipInterpolator(self.pressure, self.energy_density, extrapolate=False)
 
     @cached_property
+    def _log_energy_density_of_log_density(self) -> PchipInterpolator:
+        return PchipInterpolator(np.log(self.baryon_density), np.log(self.energy_density))
+
+    @cached_property
     def _pressure_of_potential(self) -> PchipInterpolator:
         return PchipInterpolator(self.chemical_potential, self.pressure, extrapolate=False)
 
@@ -240,13 +284,20 @@ class EoSTable:
         """
         cs2 = self.sound_speed_squared
 
-        density_from_gibbs_duhem = self._pressure_of_potential.derivative()(self.chemical_potential)
-        residual = np.abs(density_from_gibbs_duhem / self.baryon_density - 1.0)
+        # deps/dn evaluated in log-log, where both quantities are smooth over
+        # the several decades a real equation of state spans:
+        #     deps/dn = (eps/n) * dln(eps)/dln(n)
+        log_slope = self._log_energy_density_of_log_density.derivative()(
+            np.log(self.baryon_density)
+        )
+        derivative = self.energy_density / self.baryon_density * log_slope
+        residual = np.abs(derivative / self.chemical_potential - 1.0)
 
         return ValidationReport(
             max_sound_speed_squared=float(np.max(cs2)),
             min_sound_speed_squared=float(np.min(cs2)),
-            max_gibbs_duhem_residual=float(np.max(residual)),
+            median_first_law_residual=float(np.median(residual)),
+            max_first_law_residual=float(np.max(residual)),
         )
 
 
@@ -281,9 +332,17 @@ class EoSModel(ABC):
 
         Log spacing because an equation of state covers several decades and
         the interesting structure sits at the low end.
+
+        The endpoints are pinned exactly rather than left to ``logspace``.
+        A round trip through log10 and back can land a fraction of an ulp
+        outside the requested interval, which a tabulated model reports as
+        NaN -- correctly, since it was asked to extrapolate -- and which
+        then fails table construction for no physical reason.
         """
         low, high = self.density_range
-        return np.logspace(np.log10(low), np.log10(high), num, dtype=np.float64)
+        grid = np.logspace(np.log10(low), np.log10(high), num, dtype=np.float64)
+        grid[0], grid[-1] = low, high
+        return grid
 
     def table(self, baryon_density: Array | None = None) -> EoSTable:
         """Sample onto an :class:`EoSTable`, using :meth:`default_grid` if omitted."""
