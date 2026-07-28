@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      RUN_CODECOV: true
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keep in sync with requires-python in pyproject.toml.
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+
+      - name: Lint
+        run: |
+          python -m ruff format --check src tests
+          python -m ruff check src tests
+
+      - name: Type check
+        run: python -m mypy
+
+      - name: Test
+        run: python -m pytest --cov=tov_solver --cov-report=term-missing
+
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        if: env.RUN_CODECOV == 'true'
+        # TAG: [![codecov](https://codecov.io/github/rsouza01/tov-solver.py/graph/badge.svg?token=2XQ4KQ9UYQ)](https://codecov.io/github/rsouza01/tov-solver.py)
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # You get this from codecov.io
+          files: ./coverage.xml
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=rsouza01-1
+            -Dsonar.projectKey=rsouza01_tov-solver.py
+            -Dsonar.sources=src
+            -Dsonar.python.coverage.reportPaths=coverage.xml

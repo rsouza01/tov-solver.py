@@ -1,28 +1,78 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "tov-solver"
-version = "0.1.0"
-description = "CLI suite for stellar evolution and compact object simulations."
+version = "0.0.1"
+description = "Hybrid neutron star structure: equations of state and TOV integration"
 readme = "README.md"
-requires-python = ">=3.10"
-# Define your core dependencies here
+license = { text = "MIT" }
+authors = [{ name = "Rodrigo Souza" }]
+requires-python = ">=3.12"
 dependencies = [
-    "numpy>=1.24.0",
-    "scipy>=1.10.0" # Required for scipy.integrate.solve_ivp
+    "numpy>=2.0",
+    "scipy>=1.14",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[project.scripts]
-tov-solver = "tov_solver.main:main"
-
-# Optional: Define development-only dependencies
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "black>=23.0.0"
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.11",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tov_solver"]
+
+
+# --- test ------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+# Numerical code should never silently swallow a warning.
+filterwarnings = ["error"]
+
+
+# --- lint / format ---------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # import sorting
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "SIM",      # simplify
+    "RUF",      # ruff-specific
+]
+ignore = [
+    "E741",  # ambiguous variable names: l, I, O are legitimate physics symbols
+    "N806",  # non-lowercase locals: P, M, R, B are the names in the equations
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "N802",    # test names mirror physics notation
+    "SIM300",  # `x == pytest.approx(y)` is the idiom; ruff misreads UPPER_CASE as a literal
+]
+ 
+ 
+ # --- typing ----------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["tov_solver"]
+mypy_path = "src"
+strict = true
+# scipy ships incomplete stubs; don't fail the build over them.
+[[tool.mypy.overrides]]
+module = ["scipy.*"]
+ignore_missing_imports = true
