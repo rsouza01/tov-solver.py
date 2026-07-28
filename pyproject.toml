@@ -26,7 +26,6 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/tov_solver"]
 
-
 # --- test ------------------------------------------------------------------
 
 [tool.pytest.ini_options]
