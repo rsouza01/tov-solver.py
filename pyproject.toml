@@ -26,12 +26,11 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/tov_solver"]
 
-
 # --- test ------------------------------------------------------------------
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --strict-markers"
+addopts = "-v --strict-markers"
 # Numerical code should never silently swallow a warning.
 filterwarnings = ["error"]
 

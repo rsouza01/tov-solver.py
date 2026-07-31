@@ -9,9 +9,7 @@ Structure of hybrid neutron stars: hadronic and quark equations of state,
 first-order phase transitions, and integration of the
 Tolman-Oppenheimer-Volkoff equations.
 
-Successor to the C/Mathematica toolchain used in
-*Existência de matéria de quarks fria na Natureza: Modelos e Observações*
-(IAG-USP, 2016).
+Successor to the C/Mathematica toolchain used in [*Existência de matéria de quarks fria na Natureza: Modelos e Observações*(IAG-USP, 2016)](https://www.rodrigosouza.net.br/pdf/phd_thesis.pdf).
 
 
 ## Badges
@@ -20,7 +18,7 @@ Successor to the C/Mathematica toolchain used in
 ![Linux](https://img.shields.io/badge/platform-linux-lightgrey?logo=linux)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
-![Run Tests](https://github.com/rsouza01/tov-solver.py/actions/workflows/pytest.yml/badge.svg)
+![Run Tests](https://github.com/rsouza01/tov-solver.py/actions/workflows/ci.yml/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rsouza01_tov-solver.py&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rsouza01_tov-solver.py)
 
 ![Maintained](https://img.shields.io/badge/Maintained-Yes-green)
