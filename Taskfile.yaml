@@ -17,7 +17,6 @@ tasks:
 
   venv-load:
     desc: "Load the virtual environment"
-    status: ["test -d {{.VENV}}"]
     cmds:
       - source {{.VENV}}/bin/activate
 
